@@ -1,0 +1,40 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+serversTransport:
+  insecureSkipVerify: true
+
+entryPoints:
+  web:
+    address: :80
+  websecure:
+    address: :443
+
+providers:
+  providersThrottleDuration: 2s
+  docker:
+    watch: true
+    endpoint: unix:///var/run/docker.sock
+    exposedByDefault: false
+    network: internal
+  file:
+    watch: true
+    directory: /etc/traefik/dynamic
+
+api:
+  insecure: true
+  dashboard: true
+
+log:
+  level: INFO
+#  filePath: "/~/docker/traefik.log"
+
+certificatesResolvers:
+  default:
+    acme:
+      email: kitachan@outlook.com
+      storage: /etc/traefik/acme/acme.json
+      dnsChallenge:99cafe080ae24345405a0daa5e63060e6fc67
+        provider: cloudflare
+        delayBeforeCheck: 5m0s

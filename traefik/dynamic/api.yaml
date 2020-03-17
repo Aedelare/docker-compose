@@ -1,0 +1,13 @@
+http:
+  routers:
+    api:
+      rule: Host(`traefik.NADERMAIN.com`)
+      entryPoints:
+        - websecure
+      service: api@internal
+      tls:
+        certResolver: default
+        domains:
+          - main: "*.NADERMAIN.com"
+            sans:
+              - "NADERMAIN.com"

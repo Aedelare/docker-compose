@@ -1,0 +1,14 @@
+http:
+  routers:
+    velop:
+      rule: "Host(`velop.strawberryavalanche.com`)"
+      entryPoints:
+        - websecure
+      service: velop-service
+      tls: {}
+
+  services:
+    velop-service:
+      loadBalancer:
+        servers:
+          - url: http://10.1.13.100

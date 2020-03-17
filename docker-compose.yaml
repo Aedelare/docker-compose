@@ -1,0 +1,301 @@
+version: "3.7"
+services:
+
+  traefik:
+     image: traefik:latest
+     container_name: traefik
+     hostname: traefik
+     domainname: NADERMAIN.com
+     ports:
+       - "80:80"
+       - "443:443"
+     volumes:
+       - /var/run/docker.sock:/var/run/docker.sock:ro
+       - ${CONFIG}/traefik:/etc/traefik:rw
+     environment:
+       - PGID
+       - PUID
+       - TZ
+       - CLOUDFLARE_EMAIL=kitachan@outlook.com
+       - CLOUDFLARE_API_KEY=KEYKEYKEY
+     restart: unless-stopped
+     networks:
+       - web
+       - internal
+#  organizr:
+#    image: linuxserver/organizr
+#    container_name: organizr
+#    hostname: organizr  
+#    environment:
+#      - PUID
+#      - PGID
+#      - TZ
+#    volumes:
+#      - ${CONFIG}/organizr:/config
+#    restart: unless-stopped      
+#    networks:
+#      - internal
+#    labels:
+#      - 'traefik.enable=true'
+#      - 'traefik.http.routers.organizr.rule=Host(`organizr.NADERMAIN.com`)'
+#      - 'traefik.http.routers.organizr.entrypoints=web'
+#      - 'traefik.http.routers.organizr.tls=false'
+#      - 'traefik.http.services.organizr-service.loadbalancer.server.port=9983'
+#      - 'traefik.http.services.organizr-service.loadbalancer.server.scheme=http'           
+  portainer:
+    image: portainer/portainer:latest
+    container_name: portainer
+    hostname: portainer
+    ports:
+      - "9000:9000"    
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    environment:
+      - PGID
+      - PUID
+      - TZ
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIG}/portainer:/data
+    networks:
+      - internal
+#    labels:
+#      - 'traefik.enable=true'
+#      - 'traefik.http.routers.portainer.rule=Host(`portainer.NADERMAIN.com`)'
+#      - 'traefik.http.routers.portainer.entrypoints=websecure'
+#      - 'traefik.http.routers.portainer.tls=true'
+#      - 'traefik.http.services.portainer-service.loadbalancer.server.port=9000'
+#      - 'traefik.http.services.portainer-service.loadbalancer.server.scheme=http'
+  nzbget:
+    image: linuxserver/nzbget:latest
+    container_name: nzbget
+    hostname: nzbget
+    domainname: NADERMAIN.com
+    dns:
+      - '10.1.13.10'
+    volumes:
+      - ${CONFIG}/nzbget:/config
+      - ${DOWNLOAD}:/downloads
+      - ${DOWNLOAD}/intermediate:/intermediate
+    environment:
+      - PGID
+      - PUID
+      - TZ
+    restart: unless-stopped
+    networks:
+      - internal
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.nzbget.rule=Host(`nzbget.NADERMAIN.com`)'
+      - 'traefik.http.routers.nzbget.entrypoints=websecure'
+      - 'traefik.http.routers.nzbget.tls=true'
+      - 'traefik.http.services.nzbget-service.loadbalancer.server.port=6789'
+      - 'traefik.http.services.nzbget-service.loadbalancer.server.scheme=http'
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    hostname: sonarr
+    volumes:
+      - ${CONFIG}/sonarr:/config
+      - ${DOWNLOAD}:/downloads
+      - ${TVSHOWS}:/television
+    environment:
+      - PGID
+      - PUID
+      - TZ
+    restart: unless-stopped
+    networks:
+      - internal
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.sonarr.rule=Host(`sonarr.NADERMAIN.com`)'
+      - 'traefik.http.routers.sonarr.entrypoints=websecure'
+      - 'traefik.http.routers.sonarr.tls=true'
+      - 'traefik.http.services.sonarr-service.loadbalancer.server.port=8989'
+      - 'traefik.http.services.sonarr-service.loadbalancer.server.scheme=http'
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    hostname: radarr
+    volumes:
+      - ${CONFIG}/radarr:/config
+      - ${DOWNLOAD}:/downloads
+      - ${MOVIES}:/hd_movies
+    environment:
+      - PGID
+      - PUID
+      - TZ
+    restart: unless-stopped
+    networks:
+      - internal
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.radarr.rule=Host(`radarr.NADERMAIN.com`)'
+      - 'traefik.http.routers.radarr.entrypoints=websecure'
+      - 'traefik.http.routers.radarr.tls=true'
+      - 'traefik.http.services.radarr-service.loadbalancer.server.port=7878'
+      - 'traefik.http.services.radarr-service.loadbalancer.server.scheme=http'
+  tautulli:
+    image: linuxserver/tautulli:latest
+    container_name: tautulli
+    hostname: tautulli
+    volumes:
+      - ${CONFIG}/tautulli:/config
+      - /volume1/Plex/Library/Application Support/Plex Media Server/Logs:/logs:ro
+    environment:
+      - PGID
+      - PUID
+      - TZ
+    restart: unless-stopped
+    networks:
+      - internal
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.tautulli.rule=Host(`tautulli.NADERMAIN.com`)'
+      - 'traefik.http.routers.tautulli.entrypoints=websecure'
+      - 'traefik.http.routers.tautulli.tls=true'
+      - 'traefik.http.services.tautulli-service.loadbalancer.server.port=8181'
+      - 'traefik.http.services.tautulli-service.loadbalancer.server.scheme=http'
+  heimdall:
+    image: linuxserver/heimdall:latest
+    container_name: heimdall
+    hostname: heimdall
+    volumes:
+      - ${CONFIG}/heimdall:/config
+    environment:
+      - PGID
+      - PUID
+      - TZ
+    restart: unless-stopped
+    networks:
+      - internal
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.heimdall.rule=Host(`heimdall.NADERMAIN.com`)'
+      - 'traefik.http.routers.heimdall.entrypoints=websecure'
+      - 'traefik.http.routers.heimdall.tls=true'
+      - 'traefik.http.services.heimdall-service.loadbalancer.server.port=80'
+      - 'traefik.http.services.heimdall-service.loadbalancer.server.scheme=http'
+  ombi:
+    image: linuxserver/ombi:latest
+    container_name: ombi
+    hostname: ombi
+#    ports:
+#      - "3579:3579"
+    volumes:
+      - ${CONFIG}/ombi:/config
+    environment:
+      - PGID
+      - PUID
+      - TZ
+    networks:
+      - internal
+      - web
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.ombi.rule=Host(`ombi.NADERMAIN.com`)'
+      - 'traefik.http.routers.ombi.entrypoints=websecure'
+      - 'traefik.http.routers.ombi.tls=true'
+      - 'traefik.http.services.ombi-service.loadbalancer.server.port=3579'
+      - 'traefik.http.services.ombi-service.loadbalancer.server.scheme=http'      
+  bookstack:
+    image: linuxserver/bookstack:latest
+    container_name: bookstack
+    hostname: bookstack
+    volumes:
+      - ${CONFIG}/bookstack:/config
+    environment:
+      - PUID
+      - PGID
+      - TZ
+      - DB_HOST=bookstack-db
+      - DB_USER=books
+      - DB_PASS=books
+      - DB_DATABASE=bookstack
+    depends_on:
+      - bookstack-db
+    restart: unless-stopped
+    networks:
+      - internal
+      - db
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.bookstack.rule=Host(`bookstack.NADERMAIN.com`)'
+      - 'traefik.http.routers.bookstack.entrypoints=websecure'
+      - 'traefik.http.routers.bookstack.tls=true'
+      - 'traefik.http.services.bookstack-service.loadbalancer.server.port=6875'
+      - 'traefik.http.services.bookstack-service.loadbalancer.server.scheme=http'   
+  bookstack-db:
+    image: linuxserver/mariadb:latest
+    container_name: bookstack-db
+    hostname: bookstack-db
+    volumes:
+      - ${CONFIG}/bookstack-db:/config
+    environment:
+      - PUID
+      - PGID
+      - TZ
+      - MYSQL_USER=books
+      - MYSQL_PASSWORD=books
+      - MYSQL_DATABASE=bookstack
+      - MYSQL_ROOT_PASSWORD=fartsfartsfarts
+    restart: unless-stopped
+    networks:
+      - internal
+      - db 
+  grocy:
+    image: 'linuxserver/grocy:latest'
+    container_name: grocy
+    hostname: grocy
+    environment:
+      - TZ
+      - PUID
+      - PGID
+    volumes:
+      - ${CONFIG}/grocy:/config
+    restart: always
+    networks:
+      - internal
+      - web
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.grocy.rule=Host(`grocy.NADERMAIN.com`)'
+      - 'traefik.http.routers.grocy.entrypoints=websecure'
+      - 'traefik.http.routers.grocy.tls=true'
+      - 'traefik.http.services.grocy-service.loadbalancer.server.port=80'
+      - 'traefik.http.services.grocy-service.loadbalancer.server.scheme=http'
+  booksonic:
+    image: linuxserver/booksonic
+    container_name: booksonic
+    environment:
+      - PUID
+      - PGID
+      - TZ
+    #  - CONTEXT_PATH=domain.com
+    volumes:
+      - ${CONFIG}/booksonic:/config
+      - ${AUDIOBOOKS}:/audiobooks
+    #  - /path/to/podcasts:/podcasts
+    #  - /path/to/othermedia:/othermedia
+    restart: unless-stopped
+    networks:
+      - internal
+      - web
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.booksonic.rule=Host(`booksonic.NADERMAIN.com`)'
+      - 'traefik.http.routers.booksonic.entrypoints=websecure'
+      - 'traefik.http.routers.booksonic.tls=true'
+      - 'traefik.http.services.booksonic-service.loadbalancer.server.port=4040'
+      - 'traefik.http.services.booksonic-service.loadbalancer.server.scheme=http'
+
+networks:
+  web:
+    name: web
+    external: true
+  internal:
+    name: internal
+    external: false
+  db: #for database using containers
+    name: db
+    external: false
