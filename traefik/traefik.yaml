@@ -35,6 +35,6 @@ certificatesResolvers:
     acme:
       email: kitachan@outlook.com
       storage: /etc/traefik/acme/acme.json
-      dnsChallenge:99cafe080ae24345405a0daa5e63060e6fc67
+      dnsChallenge:
         provider: cloudflare
         delayBeforeCheck: 5m0s
